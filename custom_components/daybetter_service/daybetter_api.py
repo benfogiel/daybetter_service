@@ -20,7 +20,7 @@ class DayBetterApi:
     async def fetch_devices(self) -> list[dict[str, Any]]:
         """Get list of devices."""
         session = async_get_clientsession(self.hass)
-        url = "https://cloud.v2.dbiot.link/daybetter/hass/api/v1.0/hass/devices"
+        url = "https://a.dbiot.org/daybetter/hass/api/v1.0/hass/devices"
         headers = {"Authorization": f"Bearer {self.token}"}
         async with session.post(url, headers=headers) as resp:
             if resp.status == 200:
@@ -33,7 +33,7 @@ class DayBetterApi:
     async def fetch_pids(self) -> dict[str, Any]:
         """Get list of PIDs for different device types."""
         session = async_get_clientsession(self.hass)
-        url = "https://cloud.v2.dbiot.link/daybetter/hass/api/v1.0/hass/pids"
+        url = "https://a.dbiot.org/daybetter/hass/api/v1.0/hass/pids"
         headers = {"Authorization": f"Bearer {self.token}"}
         async with session.post(url, headers=headers) as resp:
             if resp.status == 200:
@@ -53,7 +53,7 @@ class DayBetterApi:
     ) -> dict[str, Any]:
         """Control a device."""
         session = async_get_clientsession(self.hass)
-        url = "https://cloud.v2.dbiot.link/daybetter/hass/api/v1.0/hass/control"
+        url = "https://a.dbiot.org/daybetter/hass/api/v1.0/hass/control"
         headers = {"Authorization": f"Bearer {self.token}"}
 
         # Priority: color temperature > color > brightness > switch

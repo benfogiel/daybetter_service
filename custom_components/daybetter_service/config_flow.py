@@ -34,7 +34,7 @@ class DayBetterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             session = async_get_clientsession(self.hass)
             try:
                 # DayBetter's interface for obtaining tokens
-                resp = await session.post("https://cloud.v2.dbiot.link/daybetter/hass/api/v1.0/hass/integrate", json={
+                resp = await session.post("https://a.dbiot.org/daybetter/hass/api/v1.0/hass/integrate", json={
                     "hassCode": user_code
                 })
 
