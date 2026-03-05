@@ -6,7 +6,7 @@ from typing import Any
 
 from homeassistant.components.light import (
     ATTR_BRIGHTNESS,
-    ATTR_COLOR_TEMP,
+    ATTR_COLOR_TEMP_KELVIN,
     ATTR_HS_COLOR,
     ColorMode,
     LightEntity,
@@ -51,7 +51,7 @@ class DayBetterLight(LightEntity):
         self._is_on = device.get("deviceState", 0) == 1
         self._brightness = 255  # Default maximum brightness
         self._hs_color = (0.0, 0.0)  # The default is white (hue, saturation)
-        self._color_temp = 300  # Default color temperature (mireds unit)
+        self._color_temp_kelvin = 3333  # Default color temperature in Kelvin
         
         device_features = device.get("deviceFeatures", [])
         
@@ -81,8 +81,8 @@ class DayBetterLight(LightEntity):
             self._attr_color_mode = ColorMode.UNKNOWN
             
         if 4 in device_features:
-            self._min_mireds = 150
-            self._max_mireds = 500
+            self._min_color_temp_kelvin = 2000  # ~500 mireds
+            self._max_color_temp_kelvin = 6667  # ~150 mireds
             
         self._device_features = device_features
 
@@ -106,25 +106,25 @@ class DayBetterLight(LightEntity):
         return None
     
     @property
-    def color_temp(self) -> int | None:
-        """Return the color temperature."""
+    def color_temp_kelvin(self) -> int | None:
+        """Return the color temperature in Kelvin."""
         if self._attr_supported_color_modes and ColorMode.COLOR_TEMP in self._attr_supported_color_modes:
-            return self._color_temp
+            return self._color_temp_kelvin
         return None
-    
+
     @property
-    def min_mireds(self) -> int:
-        """Return the coldest color temp that this light supports."""
+    def min_color_temp_kelvin(self) -> int:
+        """Return the coldest color temp (highest Kelvin) that this light supports."""
         if self._attr_supported_color_modes and ColorMode.COLOR_TEMP in self._attr_supported_color_modes:
-            return getattr(self, '_min_mireds', 153)
-        return 153
-    
+            return getattr(self, '_min_color_temp_kelvin', 2000)
+        return 2000
+
     @property
-    def max_mireds(self) -> int:
-        """Return the warmest color temp that this light supports."""
+    def max_color_temp_kelvin(self) -> int:
+        """Return the warmest color temp (lowest Kelvin) that this light supports."""
         if self._attr_supported_color_modes and ColorMode.COLOR_TEMP in self._attr_supported_color_modes:
-            return getattr(self, '_max_mireds', 500)
-        return 500
+            return getattr(self, '_max_color_temp_kelvin', 6667)
+        return 6667
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the light on."""
@@ -139,9 +139,9 @@ class DayBetterLight(LightEntity):
             self._hs_color = hs_color
 
         # Handle color temperature
-        color_temp = kwargs.get(ATTR_COLOR_TEMP)
+        color_temp = kwargs.get(ATTR_COLOR_TEMP_KELVIN)
         if color_temp is not None and self._attr_supported_color_modes and ColorMode.COLOR_TEMP in self._attr_supported_color_modes:
-            self._color_temp = color_temp
+            self._color_temp_kelvin = color_temp
 
         # Control equipment
         result = await self._api.control_device(
