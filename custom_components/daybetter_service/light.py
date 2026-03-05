@@ -57,15 +57,13 @@ class DayBetterLight(LightEntity):
         
         supported_modes = set()
         
-        if 2 in device_features:
-            supported_modes.add(ColorMode.BRIGHTNESS)
-            
         if 3 in device_features:
             supported_modes.add(ColorMode.HS)
-            
+
         if 4 in device_features:
             supported_modes.add(ColorMode.COLOR_TEMP)
-            
+
+        # BRIGHTNESS cannot coexist with HS or COLOR_TEMP in HA
         if not supported_modes:
             supported_modes.add(ColorMode.BRIGHTNESS)
             
@@ -130,26 +128,26 @@ class DayBetterLight(LightEntity):
         """Turn the light on."""
         # Get the brightness value set by the user
         brightness = kwargs.get(ATTR_BRIGHTNESS)
-        if brightness is not None and self._attr_supported_color_modes and ColorMode.BRIGHTNESS in self._attr_supported_color_modes:
+        if brightness is not None and 2 in self._device_features:
             self._brightness = brightness
 
         # Processing color
         hs_color = kwargs.get(ATTR_HS_COLOR)
-        if hs_color is not None and self._attr_supported_color_modes and ColorMode.HS in self._attr_supported_color_modes:
+        if hs_color is not None and ColorMode.HS in self._attr_supported_color_modes:
             self._hs_color = hs_color
 
         # Handle color temperature
         color_temp = kwargs.get(ATTR_COLOR_TEMP_KELVIN)
-        if color_temp is not None and self._attr_supported_color_modes and ColorMode.COLOR_TEMP in self._attr_supported_color_modes:
+        if color_temp is not None and ColorMode.COLOR_TEMP in self._attr_supported_color_modes:
             self._color_temp_kelvin = color_temp
 
         # Control equipment
         result = await self._api.control_device(
-            self._device["deviceName"], 
-            True, 
-            brightness if self._attr_supported_color_modes and ColorMode.BRIGHTNESS in self._attr_supported_color_modes else None,
-            hs_color if self._attr_supported_color_modes and ColorMode.HS in self._attr_supported_color_modes else None,
-            color_temp if self._attr_supported_color_modes and ColorMode.COLOR_TEMP in self._attr_supported_color_modes else None
+            self._device["deviceName"],
+            True,
+            brightness if 2 in self._device_features else None,
+            hs_color if ColorMode.HS in self._attr_supported_color_modes else None,
+            color_temp if ColorMode.COLOR_TEMP in self._attr_supported_color_modes else None
         )
         
         # Update status based on control results
